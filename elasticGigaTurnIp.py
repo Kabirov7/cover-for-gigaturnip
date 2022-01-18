@@ -68,6 +68,11 @@ class GigaTurnIp():
 		response = json.loads(self.post_request(url="ranklimits/", data=data).content)
 		return self.get_objects(f"ranklimits/{response.get('id')}/")
 
+	def create_rank_record(self, rank_id, user_id):
+		data = { "rank":rank_id, "user":user_id}
+		response = json.loads(self.post_request("rankrecords/", data=data))
+		return self.get_objects(f"rankrecords/{response.get('id')}/")
+
 	def create_task(self, stage_id):
 		response = json.loads(self.get_request(f'taskstages/{stage_id}/create_task/'))
 		return self.get_objects(f'tasks/{response.get("id")}/')
