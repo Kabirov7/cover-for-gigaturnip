@@ -4,7 +4,7 @@ import requests
 from token import token
 
 class GigaTurnIp():
-	rest_api = "http://127.0.0.1:8000/"
+	rest_api = "http://127.0.0.1:8000/api/v1/"
 
 	def __init__(self, headers):
 		self.headers = headers
@@ -29,30 +29,32 @@ class GigaTurnIp():
 			data = ''
 		return json.loads(self.get_request(url, data=data).content)
 
-	def create_campaign(self):
-		data = {"name": "Initial campaign", "description": "", "managers": []}
-		response = json.loads(self.post_request(url="api/v1/campaigns/", data=data).content)
-		return self.get_objects(f"api/v1/campaigns/{response.get('id')}/")
+	def create_campaign(self, name="Campaign", desc="", managers=[]):
+		data = {"name": name, "description": desc, "managers": managers}
+		response = json.loads(self.post_request(url="campaigns/", data=data).content)
+		return self.get_objects(f"campaigns/{response.get('id')}/")
 
 	def create_chain(self, campaign_id):
 		data = {"name": "Init chain", "description": "", "campaign": campaign_id}
-		response = json.loads(self.post_request(url="api/v1/chains/", data=data).content)
-		return self.get_objects(f"api/v1/chains/{response.get('id')}/")
+		response = json.loads(self.post_request(url="chains/", data=data).content)
+		return self.get_objects(f"chains/{response.get('id')}/")
 
-	def create_task_stage(self, chain_id):
+	def create_stage(self, chain_id, endpoint="taskstages",name="Initian task stage", kwargs=None):
 		data = {
-			"name": "Initial",
+			"name": name,
 			"x_pos": 1,
 			"y_pos": 1,
 			"chain": chain_id
 		}
-		response = json.loads(self.post_request(url="api/v1/taskstages/", data=data).content)
-		return self.get_objects(f"api/v1/taskstages/{response.get('id')}/")
+		if kwargs:
+			data.update(kwargs)
+		response = json.loads(self.post_request(url=f"{endpoint}/", data=data).content)
+		return self.get_objects(f"{endpoint}/{response.get('id')}/")
 
 	def create_rank(self, stage_id):
 		data = {"name": stage_id, "description": ""}
-		response = json.loads(self.post_request(url="api/v1/ranks/", data=data).content)
-		return self.get_objects(f"api/v1/ranks/{response.get('id')}/")
+		response = json.loads(self.post_request(url="ranks/", data=data).content)
+		return self.get_objects(f"ranks/{response.get('id')}/")
 
 	def create_rank_limit(self, rank_id, stage_id):
 		data = {
@@ -63,17 +65,17 @@ class GigaTurnIp():
 			"is_listing_allowed": True,
 			"is_creation_open": False,
 		}
-		response = json.loads(self.post_request(url="api/v1/ranklimits/", data=data).content)
-		return self.get_objects(f"api/v1/ranklimits/{response.get('id')}/")
+		response = json.loads(self.post_request(url="ranklimits/", data=data).content)
+		return self.get_objects(f"ranklimits/{response.get('id')}/")
 
 	def create_task(self, stage_id):
-		response = json.loads(self.get_request(f'api/v1/taskstages/{stage_id}/create_task/'))
-		return self.get_objects(f'api/v1/tasks/{response.get("id")}/')
+		response = json.loads(self.get_request(f'taskstages/{stage_id}/create_task/'))
+		return self.get_objects(f'tasks/{response.get("id")}/')
 
 	def update_task_responses(self, task_id, responses):
 		data = {"responses": responses}
-		response = self.patch_request(f"api/v1/tasks/{task_id}/", data)
-		return self.get_objects(f"api/v1/tasks/{response.get('id')}/")
+		response = self.patch_request(f"tasks/{task_id}/", data)
+		return self.get_objects(f"tasks/{response.get('id')}/")
 
 	def complete_task(self, task_id, responses=None):
 		data = responses
@@ -81,21 +83,21 @@ class GigaTurnIp():
 			data = {"complete": True}
 		else:
 			data = {"complete": True, "responses": responses}
-		response = self.patch_request(f'api/v1/tasks/{task_id}/', data)
-		return self.get_objects(f'api/v1/tasks/{response.get("id")}/')
+		response = self.patch_request(f'tasks/{task_id}/', data)
+		return self.get_objects(f'tasks/{response.get("id")}/')
 
 	def request_assignment(self, task_id):
-		url = f'api/v1/tasks/{task_id}/request_assignment/'
+		url = f'tasks/{task_id}/request_assignment/'
 		response = self.get_request(url)
-		return self.get_objects(f'api/v1/tasks/{response.get("id")}/')
+		return self.get_objects(f'tasks/{response.get("id")}/')
 
 	def add_stages(self, stage_id, name="task", stages=[]):
 		if name == "task":
 			data = {"in_stages": stages}
-			url = "api/v1/taskstages/"
+			url = "taskstages/"
 		elif name == "cond":
 			data = {"out_stages": stages}
-			url = "api/v1/conditionalstages/"
+			url = "conditionalstages/"
 		response = self.patch_request(f"{url}{stage_id}/", data)
 		return self.get_objects(f"{url}{response.get('id')}/")
 
@@ -112,5 +114,5 @@ giga = GigaTurnIp(headers)
 # 	"description": "desc",
 # }
 # dd = giga.post_request("api/v1/campaigns/", data)
-dd = giga.get_request("api/v1/campaigns/")
+dd = giga.get_request("campaigns/")
 print(dd)
