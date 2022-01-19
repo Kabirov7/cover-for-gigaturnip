@@ -48,7 +48,8 @@ class Requests():
 	def get(self):
 		response = self.get_request(f"{self.endpoint}{self.id}")
 		for key in json.loads(response.content):
-			setattr(self, key, json.loads(response.content)[key])
+			if key in self.__dict__.keys():
+				setattr(self, key, json.loads(response.content)[key])
 		return self
 
 	def get_all(self, params=''):
