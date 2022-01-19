@@ -1,3 +1,6 @@
+from Requests import Requests
+import json
+
 class BaseModel():
 	def __init__(self, name, description):
 		self.name = name
@@ -11,6 +14,11 @@ class Campaign(BaseModel, Requests):
 		super().__init__(name, description)
 		self.endpoint = 'campaigns/'
 
+	def create_new_chain(self, chain):
+		chain.campaign = self
+		chain.create_instance()
+		return chain
+
 
 class Chain(BaseModel, Requests):
 	def __init__(self, name='', description='', campaign=None):
@@ -18,18 +26,39 @@ class Chain(BaseModel, Requests):
 		self.endpoint = "chains/"
 		super().__init__(name, description)
 
+	def create_init_stage(self):
+		stage = TaskStage(self.id, "Initial Task Stage")
+		stage.create_instance()
+		return stage
+
 
 class Stage(Requests):
 
-	def __init__(self, chain, in_stages, x=1, y=1):
+	def __init__(self, name, desc, chain, in_stages, x=1, y=1):
 		self.chain = chain
 		self.in_stages = in_stages
+		self.name = name
+		self.description = desc
 		self.x_pos = x
 		self.y_pos = y
 
+	def add_stage(self, stage):
+		self.get()
+		if stage.id not in self.in_stages:
+			self.in_stages += [stage.id]
+
+		data = {
+			"id": self.id,
+			"in_stages": self.in_stages
+		}
+		response = self.patch_request(f"{self.endpoint}{self.id}/", data)
+		if response.status_code != 200:
+			self.get()
+		return stage
+
 
 class TaskStage(Stage, Requests):
-	def __init__(self, chain, in_stages, rich_text=None,
+	def __init__(self, chain=None, name="Task Stage", desc='', in_stages=[], rich_text=None,
 				 copy_input=False,
 				 allow_multiple_files=False,
 				 is_creatable=False,
@@ -57,20 +86,21 @@ class TaskStage(Stage, Requests):
 		self.webhook_payload_field = webhook_payload_field
 		self.webhook_params = webhook_params
 		self.webhook_response_field = webhook_response_field
-		super().__init__(chain, in_stages)
+		self.endpoint = "taskstages/"
+		super().__init__(name, desc, chain, in_stages)
 
 
 class ConditionalStage(Stage, Requests):
-	def __init__(self, chain, in_stages, conditions=None, pingpong=False):
+	def __init__(self, chain, name="Conditional Stage", desc='', in_stages=[], conditions=None, pingpong=False):
 		self.conditions = conditions
 		self.pingpong = pingpong
-		super().__init__(chain, in_stages)
+		self.endpoint = "conditionalstages/"
+		super().__init__(name, desc, chain, in_stages)
 
 
 class Rank(BaseModel):
-	# track = Track()
 
-	def __init__(self, stages, track=Track):
+	def __init__(self, stages, track=None):
 		self.stages = stages
 		self.track = track
 
@@ -94,7 +124,7 @@ class RankLimit():
 
 
 class RankRecord():
-	def __init__(self, user, rank=Rank()):
+	def __init__(self, user, rank=None):
 		self.user = user
 		self.rank = rank
 
