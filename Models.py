@@ -129,7 +129,7 @@ class RankRecord():
 		self.rank = rank
 
 
-class Task():
+class Task(Requests):
 
 	def __init__(self, stage, assignee=None,
 				 case=None,
@@ -148,6 +148,24 @@ class Task():
 		self.complete = complete
 		self.force_complete = force_complete
 		self.reopened = reopened
+		self.endpoint = "tasks/"
+
+	def create_task(self, stage):
+		response = json.loads(self.get_request(f'taskstages/{stage.id}/create_task/'))
+		self.id = response.get('id')
+		return self.get()
+
+	def complete_task(self):
+		if self.responses:
+			args = {"complete": True, "responses": self.responses}
+		else:
+			args = {"complete": True}
+		response = self.patch_request(f'tasks/{self.id}/', data=args)
+		return self.get()
+
+	def request_assignment(self):
+		self.get_request(f'{self.endpoint}{self.id}/request_assignment/')
+		return self.get()
 
 
 class Track(BaseModel):
