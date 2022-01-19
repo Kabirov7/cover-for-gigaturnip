@@ -56,6 +56,11 @@ class Stage(Requests):
 			self.get()
 		return stage
 
+	def create_init_task(self):
+		task = Task(self)
+		task.create_task()
+		return task
+
 
 class TaskStage(Stage, Requests):
 	def __init__(self, chain=None, name="Task Stage", desc='', in_stages=[], rich_text=None,
@@ -98,14 +103,14 @@ class ConditionalStage(Stage, Requests):
 		super().__init__(name, desc, chain, in_stages)
 
 
-class Rank(BaseModel):
+class Rank(BaseModel, Requests):
 
 	def __init__(self, stages, track=None):
 		self.stages = stages
 		self.track = track
 
 
-class RankLimit():
+class RankLimit(Requests):
 
 	def __init__(self, rank=Rank, stage=Stage, open_limit=0,
 				 total_limit=0,
@@ -123,8 +128,8 @@ class RankLimit():
 		self.is_creation_open = is_creation_open
 
 
-class RankRecord():
-	def __init__(self, user, rank=None):
+class RankRecord(Requests):
+	def __init__(self, user, rank):
 		self.user = user
 		self.rank = rank
 
@@ -150,8 +155,9 @@ class Task(Requests):
 		self.reopened = reopened
 		self.endpoint = "tasks/"
 
-	def create_task(self, stage):
-		response = json.loads(self.get_request(f'taskstages/{stage.id}/create_task/'))
+	def create_task(self):
+		self.set_data()
+		response = json.loads(self.get_request(f'taskstages/{self.stage.id}/create_task/'))
 		self.id = response.get('id')
 		return self.get()
 
@@ -170,7 +176,7 @@ class Task(Requests):
 
 class Track(BaseModel):
 
-	def __init__(self, campaign=Campaign):
+	def __init__(self, campaign=None, rank=None):
 		self.campaign = campaign
-		self.default_rank = Rank
+		self.default_rank = rank
 
