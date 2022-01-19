@@ -42,7 +42,7 @@ class Stage(Requests):
 		self.x_pos = x
 		self.y_pos = y
 
-	def add_stage(self, stage):
+	def add_in_stage(self, stage):
 		self.get()
 		if stage.id not in self.in_stages:
 			self.in_stages += [stage.id]
@@ -108,6 +108,7 @@ class Rank(BaseModel, Requests):
 	def __init__(self, stages, track=None):
 		self.stages = stages
 		self.track = track
+		self.endpoint = "ranks/"
 
 
 class RankLimit(Requests):
@@ -126,12 +127,14 @@ class RankLimit(Requests):
 		self.is_submission_open = is_submission_open
 		self.is_selection_open = is_selection_open
 		self.is_creation_open = is_creation_open
+		self.endpoint = "ranklimits/"
 
 
 class RankRecord(Requests):
 	def __init__(self, user, rank):
 		self.user = user
 		self.rank = rank
+		self.endpoint = "rankrecords/"
 
 
 class Task(Requests):
@@ -174,9 +177,10 @@ class Task(Requests):
 		return self.get()
 
 
-class Track(BaseModel):
+class Track(BaseModel, Requests):
 
 	def __init__(self, campaign=None, rank=None):
 		self.campaign = campaign
 		self.default_rank = rank
+		self.endpoint = "tracks/"
 

@@ -55,7 +55,7 @@ class Requests():
 		response = self.get_request(self.endpoint, data=params)
 		return json.loads(response.content)['results']
 
-	def set_id(self, id):
+	def get_by_id(self, id):
 		self.id = id
 		self.get()
 
