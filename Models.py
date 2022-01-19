@@ -26,8 +26,8 @@ class Chain(BaseModel, Requests):
 		self.endpoint = "chains/"
 		super().__init__(name, description)
 
-	def create_init_stage(self):
-		stage = TaskStage(self.id, "Initial Task Stage")
+	def create_init_stage(self, name="Initial Task Stage"):
+		stage = TaskStage(self.id, name)
 		stage.create_instance()
 		return stage
 

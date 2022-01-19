@@ -6,7 +6,7 @@ from token111 import token
 class Requests():
 	rest_api = "http://127.0.0.1:8000/api/v1/"
 	headers = {
-		"Authorization": f"JWT {token}"}
+			"Authorization": f"JWT {token}"}
 	id = None
 	endpoint = None
 	data = None
@@ -37,13 +37,13 @@ class Requests():
 		self.set_data()
 		response = json.loads(self.post_request(self.endpoint, data=self.data).content)
 		self.id = response.get('id')
-		self.get()
+		return self.get()
 
 	def update(self):
 		self.set_data()
 		response = json.loads(self.patch_request(f"{self.endpoint}{self.id}/", data=self.data).content)
 		self.id = response.get('id')
-		self.get()
+		return self.get()
 
 	def get(self):
 		response = self.get_request(f"{self.endpoint}{self.id}")
@@ -58,7 +58,7 @@ class Requests():
 
 	def get_by_id(self, id):
 		self.id = id
-		self.get()
+		return self.get()
 
 	def set_data(self):
 		data = {}
