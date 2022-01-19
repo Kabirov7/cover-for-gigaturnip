@@ -1,7 +1,6 @@
 import json
-from uuid import uuid4
 import requests
-from token import token
+from token111 import token
 
 class GigaTurnIp():
 	rest_api = "http://127.0.0.1:8000/api/v1/"
